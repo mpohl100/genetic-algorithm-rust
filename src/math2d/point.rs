@@ -9,11 +9,10 @@ pub struct Point {
 }
 
 impl Add<&Vector> for Point {
-    type Output = Self;
-    fn add(mut self, vec: &Vector) -> Self {
+    type Output = ();
+    fn add(mut self, vec: &Vector) {
         self.x += vec.xx;
         self.y += vec.yy;
-        self
     }
 }
 
