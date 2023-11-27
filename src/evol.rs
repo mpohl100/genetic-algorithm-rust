@@ -1,3 +1,7 @@
+use rand::prelude::*;
+use rand::distributions::Uniform;
+use std::vec::Vec;
+
 pub struct EvolutionOptions{
     num_generations: u64, // the number of generations to cross
     log_level: u64, // logging level to see how far the algorithm progressed
@@ -39,4 +43,35 @@ impl EvolutionCoordinator{
     pub fn get_progress(&self) -> f64{
         self.current_generation as f64 / self.num_generations as f64
     }
+}
+
+pub struct RandomNumberGenerator {
+    rd: ThreadRng,
+}
+
+impl RandomNumberGenerator {
+    pub fn new() -> RandomNumberGenerator {
+        RandomNumberGenerator {
+            rd: rand::thread_rng(),
+        }
+    }
+
+    pub fn fetch_uniform(&mut self, from: i32, to: i32, num: usize) -> Vec<i32> {
+        let mut uniform_numbers = Vec::new();
+        for _ in 0..num {
+            uniform_numbers.push(self.rd.gen_range(from..to));
+        }
+        uniform_numbers
+    }
+}
+
+pub trait Phenotype{
+    fn crossover(&mut self, other: &Self) where Self: Sized;
+    fn mutate(&mut self, rng: &RandomNumberGenerator, evolCoordinator: EvolutionCoordinator);
+    fn to_string_internal(&self) -> String;   
+}
+
+pub trait Challenge{
+    fn score(&self, phenotype: Box<dyn Phenotype>, rng: &RandomNumberGenerator) -> f64;
+    fn breed(&self, parents: Vec<Box<dyn Phenotype>>, rng: &RandomNumberGenerator, evolCoordinator: EvolutionCoordinator, evolOptions: EvolutionOptions) -> Vec<Box<dyn Phenotype>>;
 }
