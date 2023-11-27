@@ -21,6 +21,4 @@ impl Point {
     pub fn new(x: f32, y: f32) -> Self {
         Point { x, y }
     }
-
-    pub fn plus(&mut self, vec: &Vector) {}
 }
