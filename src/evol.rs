@@ -1,6 +1,7 @@
 use rand::prelude::*;
 use std::vec::Vec;
 
+#[derive(Clone, Copy)]
 pub struct EvolutionOptions {
     num_generations: usize, // the number of generations to cross
     log_level: u64,         // logging level to see how far the algorithm progressed
@@ -36,7 +37,6 @@ impl EvolutionCoordinator {
     pub fn run(&mut self) {
         while self.current_generation < self.num_generations {
             self.current_generation += 1;
-            println!("Generation: {}", self.current_generation);
         }
     }
 
@@ -56,6 +56,12 @@ impl RandomNumberGenerator {
         }
     }
 
+    pub fn from_seed(seed: u64) -> RandomNumberGenerator {
+        RandomNumberGenerator {
+            rd: rand::thread_rng(),
+        }
+    }
+
     pub fn fetch_uniform(&mut self, from: i32, to: i32, num: usize) -> Vec<i32> {
         let mut uniform_numbers = Vec::new();
         for _ in 0..num {
@@ -65,6 +71,7 @@ impl RandomNumberGenerator {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct EvolutionResult<Pheno>
 where
     Pheno: Phenotype,
@@ -116,13 +123,13 @@ mod detail {
         let mut children = Vec::new();
         let winner_previous_generation = &parents[0];
         children.push(winner_previous_generation.clone());
-        for i in 1..evol_options.num_parents {
+        for i in 1..parents.len() {
             let mut child = winner_previous_generation.clone();
             child.crossover(&parents[i]);
             child.mutate(rng, evol_coordinator.clone());
             children.push(child);
         }
-        for _ in evol_options.num_parents..evol_options.num_children {
+        for _ in parents.len()..evol_options.num_children {
             let mut child = winner_previous_generation.clone();
             child.mutate(rng, evol_coordinator.clone());
             children.push(child);
@@ -140,7 +147,51 @@ mod detail {
         Pheno: Phenotype,
         Chall: Challenge<Pheno>,
     {
-        panic!("Not implemented");
+        let mut evol_coordinator = EvolutionCoordinator::new(evol_options);
+        let mut candidates: Vec<Pheno> = Vec::new();
+        let mut fitness: Vec<EvolutionResult<Pheno>> = Vec::new();
+        let mut parents: Vec<Pheno> = vec![starting_value];
+
+        for _ in 0..evol_options.num_generations {
+            evol_coordinator.run();
+            candidates = challenge.breed(
+                parents.clone(),
+                rng,
+                evol_coordinator.clone(),
+                evol_options.clone(),
+            );
+            fitness.clear();
+            for candidate in candidates.iter() {
+                let score = challenge.score(candidate.clone(), rng);
+                fitness.push(EvolutionResult::<Pheno> {
+                    winner: candidate.clone(),
+                    score: score,
+                });
+            }
+            fitness.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+            if evol_options.log_level > 0 {
+                println!("Generation: {}", evol_coordinator.current_generation);
+                if evol_options.log_level > 1 {
+                    for fit in fitness.iter() {
+                        println!(
+                            "Score {}: Phenotype: {}",
+                            fit.score,
+                            fit.winner.to_string_internal()
+                        );
+                    }
+                }
+            }
+            parents.clear();
+            let mut i = 0;
+            for fit in fitness.iter() {
+                parents.push(fit.winner.clone());
+                if i >= evol_options.num_parents {
+                    break;
+                }
+                i += 1;
+            }
+        }
+        fitness[0].clone()
     }
 }
 
@@ -226,6 +277,6 @@ mod evol_test {
         let starting_value = XCoordinate::new(0.0);
         let evol_options = EvolutionOptions::new();
         let winner = detail::evolution(starting_value, challenge, evol_options, &mut rng);
-        assert_eq!(winner.winner.x(), 2.0);
+        assert!((winner.winner.x() - 2.0).abs() < 1e-6);
     }
 }
