@@ -4,8 +4,8 @@ use super::vector::Vector;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Point {
-    pub x: f32,
-    pub y: f32,
+    x: f32,
+    y: f32,
 }
 
 impl Add<Vector> for Point {
@@ -20,5 +20,9 @@ impl Add<Vector> for Point {
 impl Point {
     pub fn new(x: f32, y: f32) -> Self {
         Point { x, y }
+    }
+
+    pub fn get_coordinates(&self) -> (f32, f32) {
+        (self.x, self.y)
     }
 }

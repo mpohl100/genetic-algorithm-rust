@@ -7,8 +7,12 @@ pub struct Rectangle {
 
 impl Rectangle {
     pub fn new(tl: Point, br: Point) -> Self {
-        let tr = Point::new(br.x, tl.y);
-        let bl = Point::new(tl.x, br.y);
+        let (tl_x, tl_y) = tl.get_coordinates();
+        let (br_x, br_y) = br.get_coordinates();
+
+        let tr = Point::new(br_x, tl_y);
+        let bl = Point::new(tl_x, br_y);
+
         let lines = [
             Line::new(tl, tr),
             Line::new(tr, br),

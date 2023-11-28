@@ -13,9 +13,11 @@ impl Vector {
     }
 
     pub fn new_from_points(start: Point, end: Point) -> Self {
+        let (start_x, start_y) = start.get_coordinates();
+        let (end_x, end_y) = end.get_coordinates();
         Vector {
-            xx: end.x - start.x,
-            yy: end.y - start.y,
+            xx: end_x - start_x,
+            yy: end_y - start_y,
         }
     }
 
