@@ -7,11 +7,8 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(start: &Point, end: &Point) -> Self {
-        Line {
-            start: *start,
-            end: *end,
-        }
+    pub fn new(start: Point, end: Point) -> Self {
+        Line { start, end }
     }
 
     pub fn get_start(&self) -> &Point {

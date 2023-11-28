@@ -6,14 +6,14 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
-    pub fn new(tl: &Point, br: &Point) -> Self {
+    pub fn new(tl: Point, br: Point) -> Self {
         let tr = Point::new(br.x, tl.y);
         let bl = Point::new(tl.x, br.y);
         let lines = [
-            Line::new(&*tl, &tr),
-            Line::new(&tr, &*br),
-            Line::new(&*br, &bl),
-            Line::new(&bl, &*tl),
+            Line::new(tl, tr),
+            Line::new(tr, br),
+            Line::new(br, bl),
+            Line::new(bl, tl),
         ];
         Rectangle { lines }
     }

@@ -8,11 +8,12 @@ pub struct Point {
     pub y: f32,
 }
 
-impl Add<&Vector> for Point {
+impl Add<Vector> for Point {
     type Output = ();
-    fn add(mut self, vec: &Vector) {
-        self.x += vec.xx;
-        self.y += vec.yy;
+    fn add(mut self, vec: Vector) {
+        let (xx, yy) = vec.get_coordinates();
+        self.x += xx;
+        self.y += yy;
     }
 }
 

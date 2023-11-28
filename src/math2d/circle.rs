@@ -8,11 +8,8 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(center: &Point, radius: f32) -> Self {
-        Circle {
-            center: *center,
-            radius,
-        }
+    pub fn new(center: Point, radius: f32) -> Self {
+        Circle { center, radius }
     }
 
     pub fn get_center(&self) -> &Point {
