@@ -1,4 +1,5 @@
 mod evol;
+mod math2d;
 
 use crate::evol::EvolutionOptions;
 
