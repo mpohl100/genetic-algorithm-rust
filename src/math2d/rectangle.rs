@@ -27,6 +27,6 @@ impl Rectangle {
     }
 
     pub fn area(&self) -> f32 {
-        &self.lines[0].get_magnitude() * &self.lines[1].get_magnitude()
+        &self.lines[0].magnitude() * &self.lines[1].magnitude()
     }
 }
