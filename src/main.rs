@@ -1,7 +1,7 @@
 mod evol;
 mod math2d;
 
-use crate::evol::EvolutionOptions;
+use crate::evol::ordinary_evol::EvolutionOptions;
 
 fn main() {
     println!("Hello, world!");
