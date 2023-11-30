@@ -1,6 +1,16 @@
 use rand::prelude::*;
 use std::vec::Vec;
 
+pub trait EvolutionOptionsTrait
+where
+    Self: Clone + Sized,
+{
+    fn get_num_generations(&self) -> usize;
+    fn get_log_level(&self) -> u64;
+    fn get_num_parents(&self) -> usize;
+    fn get_num_children(&self) -> usize;
+}
+
 #[derive(Clone, Copy)]
 pub struct EvolutionOptions {
     num_generations: usize, // the number of generations to cross
@@ -20,6 +30,24 @@ impl EvolutionOptions {
     }
 }
 
+impl EvolutionOptionsTrait for EvolutionOptions {
+    fn get_num_generations(&self) -> usize {
+        self.num_generations
+    }
+
+    fn get_log_level(&self) -> u64 {
+        self.log_level
+    }
+
+    fn get_num_parents(&self) -> usize {
+        self.num_parents
+    }
+
+    fn get_num_children(&self) -> usize {
+        self.num_children
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct EvolutionCoordinator {
     current_generation: usize,
@@ -27,10 +55,13 @@ pub struct EvolutionCoordinator {
 }
 
 impl EvolutionCoordinator {
-    pub fn new(options: EvolutionOptions) -> EvolutionCoordinator {
+    pub fn new<EvolOptions>(options: &EvolOptions) -> EvolutionCoordinator
+    where
+        EvolOptions: EvolutionOptionsTrait,
+    {
         EvolutionCoordinator {
             current_generation: 0,
-            num_generations: options.num_generations,
+            num_generations: options.get_num_generations(),
         }
     }
 
@@ -76,8 +107,8 @@ pub struct EvolutionResult<Pheno>
 where
     Pheno: Phenotype,
 {
-    winner: Pheno,
-    score: f64,
+    pub winner: Pheno,
+    pub score: f64,
 }
 
 pub trait Phenotype
@@ -89,9 +120,10 @@ where
     fn to_string_internal(&self) -> String;
 }
 
-pub trait Challenge<Pheno>
+pub trait Challenge<Pheno, EvolOptions>
 where
     Pheno: Phenotype,
+    EvolOptions: EvolutionOptionsTrait,
 {
     fn score(&self, phenotype: Pheno, rng: &mut RandomNumberGenerator) -> f64;
     fn breed(
@@ -99,26 +131,27 @@ where
         parents: Vec<Pheno>,
         rng: &mut RandomNumberGenerator,
         evol_coordinator: EvolutionCoordinator,
-        evol_options: EvolutionOptions,
+        evol_options: &EvolOptions,
     ) -> Vec<Pheno>;
 }
 
-mod detail {
-    use crate::evol::Challenge;
-    use crate::evol::EvolutionCoordinator;
-    use crate::evol::EvolutionOptions;
-    use crate::evol::EvolutionResult;
-    use crate::evol::Phenotype;
-    use crate::evol::RandomNumberGenerator;
+pub mod detail {
+    use crate::evol::ordinary_evol::Challenge;
+    use crate::evol::ordinary_evol::EvolutionCoordinator;
+    use crate::evol::ordinary_evol::EvolutionOptionsTrait;
+    use crate::evol::ordinary_evol::EvolutionResult;
+    use crate::evol::ordinary_evol::Phenotype;
+    use crate::evol::ordinary_evol::RandomNumberGenerator;
 
-    pub fn breed<Pheno>(
+    pub fn breed<Pheno, EvolOptions>(
         parents: Vec<Pheno>,
         rng: &mut RandomNumberGenerator,
         evol_coordinator: EvolutionCoordinator,
-        evol_options: EvolutionOptions,
+        evol_options: &EvolOptions,
     ) -> Vec<Pheno>
     where
         Pheno: Phenotype,
+        EvolOptions: EvolutionOptionsTrait,
     {
         let mut children = Vec::new();
         let winner_previous_generation = &parents[0];
@@ -129,7 +162,7 @@ mod detail {
             child.mutate(rng, evol_coordinator.clone());
             children.push(child);
         }
-        for _ in parents.len()..evol_options.num_children {
+        for _ in parents.len()..evol_options.get_num_children() {
             let mut child = winner_previous_generation.clone();
             child.mutate(rng, evol_coordinator.clone());
             children.push(child);
@@ -137,28 +170,29 @@ mod detail {
         children
     }
 
-    pub fn evolution<Pheno, Chall>(
+    pub fn evolution<Pheno, Chall, EvolOptions>(
         starting_value: Pheno,
         challenge: Chall,
-        evol_options: EvolutionOptions,
+        evol_options: EvolOptions,
         rng: &mut RandomNumberGenerator,
     ) -> EvolutionResult<Pheno>
     where
         Pheno: Phenotype,
-        Chall: Challenge<Pheno>,
+        Chall: Challenge<Pheno, EvolOptions>,
+        EvolOptions: EvolutionOptionsTrait,
     {
-        let mut evol_coordinator = EvolutionCoordinator::new(evol_options);
+        let mut evol_coordinator = EvolutionCoordinator::new(&evol_options);
         let mut candidates: Vec<Pheno> = Vec::new();
         let mut fitness: Vec<EvolutionResult<Pheno>> = Vec::new();
         let mut parents: Vec<Pheno> = vec![starting_value];
 
-        for _ in 0..evol_options.num_generations {
+        for _ in 0..evol_options.get_num_generations() {
             evol_coordinator.run();
             candidates = challenge.breed(
                 parents.clone(),
                 rng,
                 evol_coordinator.clone(),
-                evol_options.clone(),
+                &evol_options,
             );
             fitness.clear();
             for candidate in candidates.iter() {
@@ -169,9 +203,9 @@ mod detail {
                 });
             }
             fitness.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
-            if evol_options.log_level > 0 {
+            if evol_options.get_log_level() > 0 {
                 println!("Generation: {}", evol_coordinator.current_generation);
-                if evol_options.log_level > 1 {
+                if evol_options.get_log_level() > 1 {
                     for fit in fitness.iter() {
                         println!(
                             "Score {}: Phenotype: {}",
@@ -185,7 +219,7 @@ mod detail {
             let mut i = 0;
             for fit in fitness.iter() {
                 parents.push(fit.winner.clone());
-                if i >= evol_options.num_parents {
+                if i >= evol_options.get_num_parents() {
                     break;
                 }
                 i += 1;

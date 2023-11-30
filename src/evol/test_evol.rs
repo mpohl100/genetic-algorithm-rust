@@ -1,10 +1,9 @@
-
-use crate::evol::detail;
-use crate::evol::Challenge;
-use crate::evol::EvolutionCoordinator;
-use crate::evol::EvolutionOptions;
-use crate::evol::Phenotype;
-use crate::evol::RandomNumberGenerator;
+use crate::evol::ordinary_evol::detail;
+use crate::evol::ordinary_evol::Challenge;
+use crate::evol::ordinary_evol::EvolutionCoordinator;
+use crate::evol::ordinary_evol::EvolutionOptions;
+use crate::evol::ordinary_evol::Phenotype;
+use crate::evol::ordinary_evol::RandomNumberGenerator;
 
 #[derive(Debug, Default, Copy, Clone)]
 struct XCoordinate {
@@ -49,7 +48,7 @@ impl XCoordinateChallenge {
     }
 }
 
-impl Challenge<XCoordinate> for XCoordinateChallenge {
+impl Challenge<XCoordinate, EvolutionOptions> for XCoordinateChallenge {
     fn score(&self, phenotype: XCoordinate, _rng: &mut RandomNumberGenerator) -> f64 {
         let x_coordinate = phenotype.x();
         let delta = x_coordinate - self.target;
@@ -61,7 +60,7 @@ impl Challenge<XCoordinate> for XCoordinateChallenge {
         parents: Vec<XCoordinate>,
         rng: &mut RandomNumberGenerator,
         evol_coordinator: EvolutionCoordinator,
-        evol_options: EvolutionOptions,
+        evol_options: &EvolutionOptions,
     ) -> Vec<XCoordinate> {
         detail::breed(parents, rng, evol_coordinator, evol_options)
     }
