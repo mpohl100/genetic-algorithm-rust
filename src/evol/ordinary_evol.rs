@@ -74,6 +74,10 @@ impl EvolutionCoordinator {
     pub fn get_progress(&self) -> f64 {
         self.current_generation as f64 / self.num_generations as f64
     }
+
+    pub fn get_current_generation(&self) -> usize {
+        self.current_generation
+    }
 }
 
 pub struct RandomNumberGenerator {
@@ -204,7 +208,7 @@ pub mod detail {
             }
             fitness.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
             if evol_options.get_log_level() > 0 {
-                println!("Generation: {}", evol_coordinator.current_generation);
+                println!("Generation: {}", evol_coordinator.get_current_generation());
                 if evol_options.get_log_level() > 1 {
                     for fit in fitness.iter() {
                         println!(
@@ -229,6 +233,21 @@ pub mod detail {
     }
 }
 
+
 #[cfg(test)]
-#[path = "./test_evol.rs"]
-mod test_evol;
+mod ordinary_evol_test {
+    use crate::evol::ordinary_evol::detail;
+    use crate::evol::ordinary_evol::EvolutionOptions;
+    use crate::evol::ordinary_evol::RandomNumberGenerator;
+    use crate::evol::test_evol::XCoordinate;
+    use crate::evol::test_evol::XCoordinateChallenge;
+    #[test]
+    fn test_evol() {
+        let mut rng = RandomNumberGenerator::new();
+        let challenge = XCoordinateChallenge::new(2.0, false);
+        let starting_value = XCoordinate::new(0.0);
+        let evol_options = EvolutionOptions::new();
+        let winner = detail::evolution(starting_value, challenge, evol_options, &mut rng);
+        assert!((winner.winner.x() - 2.0).abs() < 1e-2);
+    }
+}
