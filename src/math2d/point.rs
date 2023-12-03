@@ -25,4 +25,12 @@ impl Point {
     pub fn get_coordinates(&self) -> (f32, f32) {
         (self.x, self.y)
     }
+
+    pub fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    pub fn get_y(&self) -> f32 {
+        self.y
+    }
 }
