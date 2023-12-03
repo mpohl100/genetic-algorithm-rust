@@ -16,7 +16,7 @@ impl Line {
     }
 
     pub fn get_end(&self) -> Point {
-        self.end    
+        self.end
     }
 
     pub fn get_start_coordinates(&self) -> (f32, f32) {
@@ -27,7 +27,7 @@ impl Line {
         self.end.get_coordinates()
     }
 
-    pub fn get_magnitude(&self) -> f32 {
+    pub fn magnitude(&self) -> f32 {
         let (start, end) = (self.get_start_coordinates(), self.get_end_coordinates());
         let xx = end.0 - start.0;
         let yy = end.1 - start.1;
