@@ -2,9 +2,27 @@ use crate::math2d::point::Point;
 use crate::math2d::line::Line;
 use crate::math2d::rectangle::Rectangle;
 use crate::math2d::circle::Circle;
-use std::collections::BTreeSet;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct PositivePoint {
+    x: usize,
+    y: usize,
+}
+
+impl PositivePoint {
+    fn new(x: usize, y: usize) -> PositivePoint {
+        PositivePoint { x, y }
+    }
+}
+
+impl From<Point> for PositivePoint {
+    fn from(point: Point) -> PositivePoint {
+        let (x, y) = point.get_coordinates();
+        PositivePoint::new(x as usize, y as usize)
+    }
+}
+
+#[derive(Clone)]
 pub struct Canvas{
     pixels: Vec<Vec<i32>>,
     points: Vec<Point>,
@@ -30,13 +48,13 @@ impl Canvas{
         self.pixels[y][x]
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, value: i32){
-        self.pixels[y][x] = value;
+    pub fn draw_pixel(&mut self, positive_point: PositivePoint, value: i32){
+        self.pixels[positive_point.x][positive_point.y] = value;
         if value == 0{
-            let index = self.points.iter().position(|point| *point == Point::new(x as f32, y as f32));
+            let index = self.points.iter().position(|point| PositivePoint::from(*point) == positive_point);
             self.points.remove(index.unwrap());
         }else{
-            self.points.push(Point::new(x as f32, y as f32));
+            self.points.push(Point::new(positive_point.x as f32, positive_point.y as f32));
         }
     }
 
@@ -75,8 +93,149 @@ impl Canvas{
         ret
     }
 
-    pub fn draw_line(&mut self, line: &Line){
-    
+    fn draw_line(&mut self, line: &Line) {
+        let mut start = line.get_start();
+        let mut end = line.get_end();
+        if end.get_coordinates().0 < start.get_coordinates().0 {
+            std::mem::swap(&mut start, &mut end);
+        }
+        const DO_LOG: bool = false;
+        let mut d_x = end.get_coordinates().0 - start.get_coordinates().0;
+        let mut d_y = end.get_coordinates().1 - start.get_coordinates().1;
+        let mut current_point = start;
+        // draw start and end point
+        self.draw_pixel(PositivePoint::from(start), 1);
+        self.draw_pixel(PositivePoint::from(end), 1);
+        if d_x == 0.0 {
+            if d_y >= 0.0 {
+                for _ in 0..=d_y as usize {
+                    self.draw_pixel(PositivePoint::from(current_point), 1);
+                    current_point = Point::new(current_point.get_x(), current_point.get_y() + 1.0);
+                }
+            } else {
+                for _ in 0..=(-d_y) as usize {
+                    self.draw_pixel(PositivePoint::from(current_point), 1);
+                    current_point = Point::new(current_point.get_x(), current_point.get_y() - 1.0);
+                }
+            }
+            return;
+        }
+        if d_y == 0.0 {
+            if d_x >= 0.0 {
+                if DO_LOG {
+                    println!("x positive");
+                }
+                for _ in 0..=d_x as usize {
+                    self.draw_pixel(PositivePoint::from(current_point), 1);
+                    current_point = Point::new(current_point.get_x() + 1.0, current_point.get_y());
+                }
+            } else {
+                for _ in 0..=(-d_x) as usize {
+                    self.draw_pixel(PositivePoint::from(current_point), 1);
+                    current_point = Point::new(current_point.get_x() - 1.0, current_point.get_y());
+                }
+            }
+            return;
+        }
+
+        let gradient = f64::from(d_y) / f64::from(d_x);
+        if DO_LOG {
+            println!("gradient = {}; dX={}; dY={}", gradient, d_x, d_y);
+        }
+        enum Direction {
+            X,
+            YUp,
+            YDown,
+        }
+        let move_coord = |d: &mut f32, point: &mut Point, went: &mut i32, direction: Direction| {
+            match direction {
+                Direction::X => {
+                    *d -= 1.0;
+                    *point = Point::new(point.get_x() + 1.0, point.get_y());
+                    *went += 1;
+                }
+                Direction::YUp => {
+                    *d -= 1.0;
+                    *point = Point::new(point.get_x(), point.get_y() + 1.0);
+                    *went += 1;
+                }
+                Direction::YDown => {
+                    *d += 1.0;
+                    *point = Point::new(point.get_x(), point.get_y() - 1.0);
+                    *went -= 1;
+                }
+            }
+        };
+        let go_x = |went_x: f64, went_y: f64| -> Direction {
+            let deduce_current_gradient = || -> f64 {
+                if went_x == 0.0 {
+                    if went_y > 0.0 {
+                        return f64::INFINITY;
+                    } else if went_y == 0.0 {
+                        return 0.0;
+                    } else {
+                        return -f64::INFINITY;
+                    }
+                }
+                went_y / went_x
+            };
+            if DO_LOG {
+                println!("went_x = {}; went_y = {}", went_x, went_y);
+            }
+            let current_gradient = deduce_current_gradient();
+            if DO_LOG {
+                println!("current gradient = {}; gradient = {}", current_gradient, gradient);
+            }
+            if gradient >= 0.0 {
+                if current_gradient > gradient {
+                    if DO_LOG {
+                        println!("go x");
+                    }
+                    return Direction::X;
+                }
+                if DO_LOG {
+                    println!("go y up");
+                }
+                return Direction::YUp;
+            } else {
+                if current_gradient < gradient {
+                    if DO_LOG {
+                        println!("go x");
+                    }
+                    return Direction::X;
+                }
+                if DO_LOG {
+                    println!("go y down");
+                }
+                return Direction::YDown;
+            }
+        };
+        let mut went_x = 0;
+        let mut went_y = 0;
+        loop {
+            let positive_current_point = PositivePoint::from(current_point);
+            if d_x == 0.0 && d_y == 0.0 {
+                if positive_current_point != PositivePoint::from(end) {
+                    panic!("end point not hit in draw_line.");
+                }
+                self.draw_pixel(positive_current_point, 1);
+                break;
+            }
+            if DO_LOG {
+                println!(
+                    "setting point to 1: x={}; y={}; dX={}; dY={}",
+                    current_point.get_x(), current_point.get_y(), d_x, d_y
+                );
+            }
+            self.draw_pixel(positive_current_point, 1);
+            let direction = go_x(f64::from(went_x), f64::from(went_y));
+            match direction {
+                Direction::X => move_coord(&mut d_x, &mut current_point, &mut went_x, direction),
+                Direction::YUp | Direction::YDown => {
+                    move_coord(&mut d_y, &mut current_point, &mut went_y, direction)
+                }
+            }
+        }
     }
 
     pub fn draw_rectangle(&mut self, rectangle: Rectangle){
@@ -155,4 +314,3 @@ mod canvas_tests {
         assert_eq!(canvas_pixels, result);
     }
 }
-

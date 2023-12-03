@@ -11,6 +11,14 @@ impl Line {
         Line { start, end }
     }
 
+    pub fn get_start(&self) -> Point {
+        self.start
+    }
+
+    pub fn get_end(&self) -> Point {
+        self.end    
+    }
+
     pub fn get_start_coordinates(&self) -> (f32, f32) {
         self.start.get_coordinates()
     }
