@@ -34,18 +34,16 @@ impl<const MIN_DEGREES: i32, const MAX_DEGREES: i32> RegionedAngle<MIN_DEGREES, 
         while self.radians < MIN_DEGREES as f32 / 180.0 * PI {
             self.radians += 2.0 * PI;
         }
-        while self.radians > MAX_DEGREES as f32 / 180.0 * PI {
+        while self.radians >= MAX_DEGREES as f32 / 180.0 * PI {
             self.radians -= 2.0 * PI;
         }
         *self
     }
 
     fn radians_from_vectors(v1: &Vector, v2: &Vector) -> f32 {
-        let (xx1, yy1) = v1.get_coordinates();
-        let (xx2, yy2) = v2.get_coordinates();
-        let dot_product = xx1 * xx2 + yy1 * yy2;
+        let dot_product = v1.dot(v2);
+        let cross_product = v1.cross(v2);
         let magnitude_product = v1.magnitude() * v2.magnitude();
-        let cross_product = xx1 * yy2 - yy1 * xx2;
         let cos_angle = dot_product / magnitude_product;
         let angle = cos_angle.acos();
         if cross_product < 0.0 {
@@ -62,7 +60,7 @@ impl<const MIN_DEGREES: i32, const MAX_DEGREES: i32> From<(Point, Point, Point)>
     fn from((start, center, end): (Point, Point, Point)) -> Self {
         let v1 = Vector::from((center, start));
         let v2 = Vector::from((center, end));
-        let radians = RegionedAngle::<MIN_DEGREES, MAX_DEGREES>::radians_from_vectors(&v1, &v2);
+        let radians = RegionedAngle::<-180, 180>::radians_from_vectors(&v1, &v2);
         let mut regioned_angle: RegionedAngle<MIN_DEGREES, MAX_DEGREES> = RegionedAngle { radians };
         regioned_angle.move_to_range()
     }
@@ -74,7 +72,7 @@ impl<const MIN_DEGREES: i32, const MAX_DEGREES: i32> From<(&Line, &Line)>
     fn from((l1, l2): (&Line, &Line)) -> Self {
         let v1 = Vector::from((l1.get_start(), l1.get_end()));
         let v2 = Vector::from((l2.get_start(), l2.get_end()));
-        let radians = RegionedAngle::<MIN_DEGREES, MAX_DEGREES>::radians_from_vectors(&v1, &v2);
+        let radians = RegionedAngle::<-180, 180>::radians_from_vectors(&v1, &v2);
         let mut regioned_angle: RegionedAngle<MIN_DEGREES, MAX_DEGREES> = RegionedAngle { radians };
         regioned_angle.move_to_range()
     }

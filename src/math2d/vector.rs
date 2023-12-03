@@ -47,4 +47,16 @@ impl Vector {
         let y_rotated = dy - ((dy - self.yy) * cos_angle) + ((self.xx - dx) * sin_angle);
         Vector::new(x_rotated, y_rotated)
     }
+
+    pub fn dot(&self, other: &Vector) -> f32 {
+        let (xx1, yy1) = self.get_coordinates();
+        let (xx2, yy2) = other.get_coordinates();
+        xx1 * xx2 + yy1 * yy2
+    }
+
+    pub fn cross(&self, other: &Vector) -> f32 {
+        let (xx1, yy1) = self.get_coordinates();
+        let (xx2, yy2) = other.get_coordinates();
+        xx1 * yy2 - yy1 * xx2
+    }
 }
