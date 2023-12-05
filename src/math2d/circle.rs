@@ -12,7 +12,11 @@ impl Circle {
         Circle { center, radius }
     }
 
-    pub fn get_center(&self) -> (f32, f32) {
+    pub fn get_center(&self) -> Point {
+        self.center
+    }
+
+    pub fn get_center_coords(&self) -> (f32, f32) {
         self.center.get_coordinates()
     }
 

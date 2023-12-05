@@ -1,9 +1,10 @@
+mod bubble_swarm;
+mod canvas;
 mod evol;
 mod math2d;
-mod canvas;
 
-use crate::evol::ordinary_evol::EvolutionOptions;
 use crate::canvas::Canvas;
+use crate::evol::ordinary_evol::EvolutionOptions;
 
 fn main() {
     println!("Hello, world!");
