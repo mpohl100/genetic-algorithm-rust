@@ -1,6 +1,6 @@
 use crate::math2d::{circle::Circle, point::Point, regioned_angle::RegionedAngle, vector::Vector};
 
-use super::{angle_area::AngleArea, source_circle::SourceCircle};
+use super::{segment::Segment, source_circle::SourceCircle};
 
 pub fn get_mid_point(from: Point, to: Point) -> Point {
     from + Vector::from((from, to)).scale(0.5)
@@ -26,8 +26,8 @@ pub fn calculate_circle_intersection(first: &Circle, second: &Circle) -> CircleI
         return CircleIntersection::None;
     }
 
-    // Check if the circles are touching.
-    if distance == first.get_radius() + second.get_radius() {
+    // Check if the circles are touching. -> TODO: FIX THIS
+    if (first.get_radius() + second.get_radius()).abs() < 1e-10 {
         return CircleIntersection::One(get_mid_point(first.get_center(), second.get_center()));
     }
 
@@ -55,7 +55,7 @@ pub fn calculate_circle_intersection(first: &Circle, second: &Circle) -> CircleI
 }
 
 pub fn calculate_first_guess(source_circle: &SourceCircle) -> Circle {
-    let angle: RegionedAngle<-180, 180> = source_circle.get_angle_area().get_angle(0.5);
+    let angle: RegionedAngle<-180, 180> = source_circle.get_segment().get_angle(0.5);
     let radius = source_circle.get_circle().get_radius();
     let center = source_circle.get_circle().get_center()
         + Vector::new(source_circle.get_circle().get_radius() * 2.0, 0.0).rotate(angle);
@@ -66,10 +66,7 @@ pub fn deduce_next_source_circles(circle: Circle) -> Vec<SourceCircle> {
     let mut source_circles = Vec::new();
     let nb_angles = 6;
     for i in 0..nb_angles {
-        source_circles.push(SourceCircle::new(
-            circle,
-            AngleArea::new(i as f32, nb_angles),
-        ))
+        source_circles.push(SourceCircle::new(circle, Segment::new(i as f32, nb_angles)))
     }
     source_circles
 }
