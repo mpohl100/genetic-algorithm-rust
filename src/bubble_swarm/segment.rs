@@ -1,14 +1,14 @@
 use crate::math2d::regioned_angle::{RegionedAngle, RegionedAngleTrait};
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
-pub struct AngleArea {
+pub struct Segment {
     area: f32,
     nb_angles: usize,
 }
 
-impl AngleArea {
-    pub fn new(area: f32, nb_angles: usize) -> AngleArea {
-        AngleArea { area, nb_angles }
+impl Segment {
+    pub fn new(area: f32, nb_angles: usize) -> Self {
+        Self { area, nb_angles }
     }
 
     pub fn is_within<T>(&self, angle: &T) -> bool

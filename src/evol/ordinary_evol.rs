@@ -1,5 +1,5 @@
 use rand::prelude::*;
-use std::vec::Vec;
+use std::{collections::VecDeque, vec::Vec};
 
 pub trait EvolutionOptionsTrait
 where
@@ -97,10 +97,10 @@ impl RandomNumberGenerator {
         }
     }
 
-    pub fn fetch_uniform(&mut self, from: i32, to: i32, num: usize) -> Vec<i32> {
-        let mut uniform_numbers = Vec::new();
+    pub fn fetch_uniform(&mut self, from: f32, to: f32, num: usize) -> VecDeque<f32> {
+        let mut uniform_numbers = VecDeque::new();
         for _ in 0..num {
-            uniform_numbers.push(self.rd.gen_range(from..to));
+            uniform_numbers.push_back(self.rd.gen_range(from..to));
         }
         uniform_numbers
     }
@@ -232,7 +232,6 @@ pub mod detail {
         fitness[0].clone()
     }
 }
-
 
 #[cfg(test)]
 mod ordinary_evol_test {
