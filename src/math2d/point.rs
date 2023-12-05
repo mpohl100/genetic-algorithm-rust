@@ -9,11 +9,12 @@ pub struct Point {
 }
 
 impl Add<Vector> for Point {
-    type Output = ();
-    fn add(mut self, vec: Vector) {
+    type Output = Point;
+    fn add(mut self, vec: Vector) -> Self::Output {
         let (xx, yy) = vec.get_coordinates();
         self.x += xx;
         self.y += yy;
+        self
     }
 }
 

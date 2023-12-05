@@ -1,10 +1,10 @@
-use crate::math2d::point::Point;
-use crate::math2d::line::Line;
-use crate::math2d::rectangle::Rectangle;
 use crate::math2d::circle::Circle;
+use crate::math2d::line::Line;
+use crate::math2d::point::Point;
+use crate::math2d::rectangle::Rectangle;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct PositivePoint {
+pub struct PositivePoint {
     x: usize,
     y: usize,
 }
@@ -23,68 +23,72 @@ impl From<Point> for PositivePoint {
 }
 
 #[derive(Clone)]
-pub struct Canvas{
+pub struct Canvas {
     pixels: Vec<Vec<i32>>,
     points: Vec<Point>,
 }
 
-impl Canvas{
-    pub fn new(width: usize, height: usize) -> Canvas{
+impl Canvas {
+    pub fn new(width: usize, height: usize) -> Canvas {
         let mut pixels = Vec::with_capacity(height);
-        for _ in 0..height{
+        for _ in 0..height {
             let mut row = Vec::with_capacity(width);
-            for _ in 0..width{
+            for _ in 0..width {
                 row.push(0);
             }
             pixels.push(row);
         }
-        Canvas{
+        Canvas {
             pixels,
             points: Vec::new(),
         }
     }
 
-    pub fn get_pixel(&self, x: usize, y: usize) -> i32{
+    pub fn get_pixel(&self, x: usize, y: usize) -> i32 {
         self.pixels[y][x]
     }
 
-    pub fn draw_pixel(&mut self, positive_point: PositivePoint, value: i32){
+    pub fn draw_pixel(&mut self, positive_point: PositivePoint, value: i32) {
         self.pixels[positive_point.x][positive_point.y] = value;
-        if value == 0{
-            let index = self.points.iter().position(|point| PositivePoint::from(*point) == positive_point);
+        if value == 0 {
+            let index = self
+                .points
+                .iter()
+                .position(|point| PositivePoint::from(*point) == positive_point);
             self.points.remove(index.unwrap());
-        }else{
-            self.points.push(Point::new(positive_point.x as f32, positive_point.y as f32));
+        } else {
+            self.points
+                .push(Point::new(positive_point.x as f32, positive_point.y as f32));
         }
     }
 
-    pub fn get_points(&self) -> &Vec<Point>{
+    pub fn get_points(&self) -> &Vec<Point> {
         &self.points
     }
 
-    pub fn get_width(&self) -> usize{
+    pub fn get_width(&self) -> usize {
         self.pixels[0].len()
     }
 
-    pub fn get_height(&self) -> usize{
+    pub fn get_height(&self) -> usize {
         self.pixels.len()
     }
 
-    pub fn clear(&mut self){
-        for row in self.pixels.iter_mut(){
-            for pixel in row.iter_mut(){
+    pub fn clear(&mut self) {
+        for row in self.pixels.iter_mut() {
+            for pixel in row.iter_mut() {
                 *pixel = 0;
             }
         }
         self.points.clear();
     }
-    pub fn get_pixels(&self) -> String{
+    pub fn get_pixels(&self) -> String {
         let mut ret = String::new();
-        for row in self.pixels.iter(){
-            for pixel in row.iter(){
-                if *pixel == 0{
+        for row in self.pixels.iter() {
+            for pixel in row.iter() {
+                if *pixel == 0 {
                     ret.push_str(".");
-                }else{
+                } else {
                     ret.push_str("X");
                 }
             }
@@ -184,7 +188,10 @@ impl Canvas{
             }
             let current_gradient = deduce_current_gradient();
             if DO_LOG {
-                println!("current gradient = {}; gradient = {}", current_gradient, gradient);
+                println!(
+                    "current gradient = {}; gradient = {}",
+                    current_gradient, gradient
+                );
             }
             if gradient >= 0.0 {
                 if current_gradient > gradient {
@@ -224,7 +231,10 @@ impl Canvas{
             if DO_LOG {
                 println!(
                     "setting point to 1: x={}; y={}; dX={}; dY={}",
-                    current_point.get_x(), current_point.get_y(), d_x, d_y
+                    current_point.get_x(),
+                    current_point.get_y(),
+                    d_x,
+                    d_y
                 );
             }
             self.draw_pixel(positive_current_point, 1);
@@ -238,24 +248,22 @@ impl Canvas{
         }
     }
 
-    pub fn draw_rectangle(&mut self, rectangle: Rectangle){
-        for line in rectangle.get_lines(){
+    pub fn draw_rectangle(&mut self, rectangle: Rectangle) {
+        for line in rectangle.get_lines() {
             self.draw_line(line);
         }
     }
 
-    pub fn draw_circle(&mut self, circle: Circle){
-    
-    }
+    pub fn draw_circle(&mut self, circle: Circle) {}
 }
 
 #[cfg(test)]
 mod canvas_tests {
+    use super::Canvas;
+    use crate::math2d::circle::Circle;
     use crate::math2d::line::Line;
     use crate::math2d::point::Point;
     use crate::math2d::rectangle::Rectangle;
-    use crate::math2d::circle::Circle;
-    use super::Canvas;
 
     #[test]
     fn canvas_line() {
@@ -288,7 +296,10 @@ mod canvas_tests {
         for i in 1..9 {
             for j in 1..9 {
                 let mut canvas = Canvas::new(10, 10);
-                canvas.draw_line(&Line::new(Point::new(5.0, 5.0), Point::new(i as f32, j as f32)));
+                canvas.draw_line(&Line::new(
+                    Point::new(5.0, 5.0),
+                    Point::new(i as f32, j as f32),
+                ));
                 let canvas_pixels = canvas.get_pixels();
                 assert_eq!(canvas_pixels.chars().nth(5 * 11 + 5).unwrap(), 'X');
                 assert_eq!(canvas_pixels.chars().nth(i * 11 + j).unwrap(), 'X');
