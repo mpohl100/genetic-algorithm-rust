@@ -1,10 +1,13 @@
-use crate::evol::ordinary_evol::EvolutionOptionsTrait;
-use crate::evol::ordinary_evol::EvolutionOptions;
 use crate::evol::ordinary_evol::EvolutionCoordinator;
+use crate::evol::ordinary_evol::EvolutionOptions;
+use crate::evol::ordinary_evol::EvolutionOptionsTrait;
 use crate::evol::ordinary_evol::Phenotype;
 use crate::evol::ordinary_evol::RandomNumberGenerator;
 
-pub trait PartialEvolutionOptionsTrait where Self: EvolutionOptionsTrait {
+pub trait PartialEvolutionOptionsTrait
+where
+    Self: EvolutionOptionsTrait,
+{
     fn get_min_magnitude(&self) -> f64;
     fn get_max_magnitude(&self) -> f64;
 }
@@ -17,7 +20,11 @@ pub struct PartialEvolutionOptions {
 }
 
 impl PartialEvolutionOptions {
-    pub fn new(options: EvolutionOptions, min_magnitude: f64, max_magnitude: f64) -> PartialEvolutionOptions {
+    pub fn new(
+        options: EvolutionOptions,
+        min_magnitude: f64,
+        max_magnitude: f64,
+    ) -> PartialEvolutionOptions {
         PartialEvolutionOptions {
             options: options,
             min_magnitude: min_magnitude,
@@ -26,7 +33,7 @@ impl PartialEvolutionOptions {
     }
 }
 
-impl EvolutionOptionsTrait for PartialEvolutionOptions{
+impl EvolutionOptionsTrait for PartialEvolutionOptions {
     fn get_num_children(&self) -> usize {
         self.options.get_num_children()
     }
@@ -63,7 +70,10 @@ where
     pub score: f64,
 }
 
-pub trait PartialPhenotype where Self: Phenotype{
+pub trait PartialPhenotype
+where
+    Self: Phenotype,
+{
     fn magnitude(&self) -> f64;
 }
 
@@ -82,14 +92,13 @@ where
     ) -> Vec<Pheno>;
 }
 
-pub mod detail{
+pub mod detail {
     use crate::evol::ordinary_evol::EvolutionCoordinator;
-    use crate::evol::partial_evol::PartialPhenotype;
-    use crate::evol::partial_evol::PartialEvolutionOptionsTrait;
     use crate::evol::ordinary_evol::RandomNumberGenerator;
-    use crate::evol::partial_evol::PartialChallenge;
     use crate::evol::partial_evol::EvolutionResult;
-
+    use crate::evol::partial_evol::PartialChallenge;
+    use crate::evol::partial_evol::PartialEvolutionOptionsTrait;
+    use crate::evol::partial_evol::PartialPhenotype;
 
     pub fn breed_partial<Pheno, EvolOptions>(
         parents: Vec<Pheno>,
@@ -123,7 +132,7 @@ pub mod detail{
                 phenotype
             };
             let mut new_phenotype = phenotype.clone();
-            for _ in 0..1000{
+            for _ in 0..1000 {
                 if pheno_type_in_range(&new_phenotype) {
                     return Some(new_phenotype);
                 }
@@ -207,15 +216,14 @@ pub mod detail{
         }
         fitness[0].clone()
     }
-
 }
 
 #[cfg(test)]
 mod partial_evol_test {
-    use crate::evol::partial_evol::detail;
     use crate::evol::ordinary_evol::EvolutionOptions;
-    use crate::evol::partial_evol::PartialEvolutionOptions;
     use crate::evol::ordinary_evol::RandomNumberGenerator;
+    use crate::evol::partial_evol::detail;
+    use crate::evol::partial_evol::PartialEvolutionOptions;
     use crate::evol::test_evol::XCoordinate;
     use crate::evol::test_evol::XCoordinateChallenge;
     #[test]

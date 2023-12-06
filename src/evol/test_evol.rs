@@ -4,11 +4,10 @@ use crate::evol::ordinary_evol::EvolutionCoordinator;
 use crate::evol::ordinary_evol::EvolutionOptions;
 use crate::evol::ordinary_evol::Phenotype;
 use crate::evol::ordinary_evol::RandomNumberGenerator;
+use crate::evol::partial_evol::detail::breed_partial;
 use crate::evol::partial_evol::PartialChallenge;
 use crate::evol::partial_evol::PartialEvolutionOptions;
 use crate::evol::partial_evol::PartialPhenotype;
-use crate::evol::partial_evol::detail::breed_partial;
-
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct XCoordinate {
@@ -34,7 +33,7 @@ impl Phenotype for XCoordinate {
     }
 
     fn mutate(&mut self, rng: &mut RandomNumberGenerator, evol_coordinator: EvolutionCoordinator) {
-        let delta = rng.fetch_uniform(-100, 100, 1)[0] as f64;
+        let delta = rng.fetch_uniform(-100.0, 100.0, 1)[0] as f64;
         self.x += delta / 100.0;
     }
 
@@ -56,7 +55,10 @@ pub struct XCoordinateChallenge {
 
 impl XCoordinateChallenge {
     pub fn new(target: f64, use_patial: bool) -> XCoordinateChallenge {
-        XCoordinateChallenge { target: target, use_partial: use_patial }
+        XCoordinateChallenge {
+            target: target,
+            use_partial: use_patial,
+        }
     }
 }
 
@@ -76,14 +78,13 @@ impl Challenge<XCoordinate, EvolutionOptions> for XCoordinateChallenge {
     ) -> Vec<XCoordinate> {
         if !self.use_partial {
             breed(parents, rng, evol_coordinator, evol_options)
-        }
-        else{
+        } else {
             Vec::new()
         }
     }
 }
 
-impl PartialChallenge<XCoordinate, PartialEvolutionOptions> for XCoordinateChallenge{
+impl PartialChallenge<XCoordinate, PartialEvolutionOptions> for XCoordinateChallenge {
     fn score(&self, phenotype: XCoordinate, _rng: &mut RandomNumberGenerator) -> f64 {
         let x_coordinate = phenotype.x();
         let delta = x_coordinate - self.target;
@@ -98,8 +99,7 @@ impl PartialChallenge<XCoordinate, PartialEvolutionOptions> for XCoordinateChall
     ) -> Vec<XCoordinate> {
         if self.use_partial {
             breed_partial(parents, rng, evol_coordinator, evol_options)
-        }
-        else{
+        } else {
             Vec::new()
         }
     }
