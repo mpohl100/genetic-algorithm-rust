@@ -59,4 +59,12 @@ impl Vector {
         let (xx2, yy2) = other.get_coordinates();
         xx1 * yy2 - yy1 * xx2
     }
+
+    pub fn get_x(&self) -> f32 {
+        self.xx
+    }
+
+    pub fn get_y(&self) -> f32 {
+        self.yy
+    }
 }

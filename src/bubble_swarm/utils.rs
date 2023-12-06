@@ -1,4 +1,7 @@
-use crate::math2d::{circle::Circle, point::Point, regioned_angle::RegionedAngle, vector::Vector};
+use crate::math2d::{
+    circle::Circle, norm_vector::NormVector, point::Point, regioned_angle::RegionedAngle,
+    vector::Vector,
+};
 
 use super::{segment::Segment, source_circle::SourceCircle};
 
@@ -28,7 +31,11 @@ pub fn calculate_circle_intersection(first: &Circle, second: &Circle) -> CircleI
 
     // Check if the circles are touching. -> TODO: FIX THIS
     if (first.get_radius() + second.get_radius()).abs() < 1e-10 {
-        return CircleIntersection::One(get_mid_point(first.get_center(), second.get_center()));
+        let point = first.get_center()
+            + NormVector::from((first.get_center(), second.get_center()))
+                .get_vector()
+                .scale(first.get_radius());
+        return CircleIntersection::One(point);
     }
 
     // Calculate the intersection points using trigonometry.
