@@ -1,9 +1,9 @@
-use crate::math2d::vector::Vector;
+use crate::canvas::detail::Pattern;
 use crate::math2d::circle::Circle;
 use crate::math2d::line::Line;
 use crate::math2d::point::Point;
 use crate::math2d::rectangle::Rectangle;
-use crate::canvas::detail::Pattern;
+use crate::math2d::vector::Vector;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct PositivePoint {
@@ -50,13 +50,13 @@ impl Canvas {
         self.pixels[y][x]
     }
 
-    pub fn draw_pixel_maybe(&mut self, point: Point, value: i32){
-        if point.get_x() < 0.0 || point.get_y() < 0.0{
+    pub fn draw_pixel_maybe(&mut self, point: Point, value: i32) {
+        if point.get_x() < 0.0 || point.get_y() < 0.0 {
             return;
         }
         let x = point.get_x() as usize;
         let y = point.get_y() as usize;
-        if x < self.get_width() && y < self.get_height(){
+        if x < self.get_width() && y < self.get_height() {
             self.draw_pixel(PositivePoint::new(x, y), value);
         }
     }
@@ -268,29 +268,49 @@ impl Canvas {
     }
 
     pub fn draw_circle(&mut self, circle: Circle) {
-        let start_x = (circle.get_center() + Vector::new(-circle.get_radius() - 5.0, 0.0)).get_x() as i32;
-        let end_x = (circle.get_center() + Vector::new(circle.get_radius() + 5.0, 0.0)).get_x() as i32;
-        let start_y = (circle.get_center() + Vector::new(0.0, -circle.get_radius() - 5.0)).get_y() as i32;
-        let end_y = (circle.get_center() + Vector::new(0.0, circle.get_radius() + 5.0)).get_y() as i32;
+        let start_x =
+            (circle.get_center() + Vector::new(-circle.get_radius() - 5.0, 0.0)).get_x() as i32;
+        let end_x =
+            (circle.get_center() + Vector::new(circle.get_radius() + 5.0, 0.0)).get_x() as i32;
+        let start_y =
+            (circle.get_center() + Vector::new(0.0, -circle.get_radius() - 5.0)).get_y() as i32;
+        let end_y =
+            (circle.get_center() + Vector::new(0.0, circle.get_radius() + 5.0)).get_y() as i32;
         let mut all_patterns = Vec::<Vec<Pattern>>::new();
-        for y in start_y..end_y{
+        for y in start_y..end_y {
             let mut line_patterns = Vec::<Pattern>::new();
-            for x in start_x..end_x{
+            for x in start_x..end_x {
                 let mut previous_pattern;
                 if line_patterns.is_empty() {
-                    previous_pattern = Pattern::new(x-1, y, vec!['.']);
+                    previous_pattern = Pattern::new(x - 1, y, vec!['.']);
                 } else {
-                    previous_pattern = line_patterns[line_patterns.len()-1].clone();
+                    previous_pattern = line_patterns[line_patterns.len() - 1].clone();
                 }
                 let point = Point::new(x as f32, y as f32);
                 let distance = Vector::from((circle.get_center(), point)).magnitude();
                 if distance <= circle.get_radius() {
-                    line_patterns.push(Pattern::new(x, y, vec![previous_pattern.get_pattern()[previous_pattern.get_pattern().len() - 1], 'X']));
-                } else if distance <= circle.get_radius() + 1.0 {
-                    line_patterns.push(Pattern::new(x, y, vec![previous_pattern.get_pattern()[previous_pattern.get_pattern().len() - 1],'.']));
+                    line_patterns.push(Pattern::new(
+                        x,
+                        y,
+                        vec![
+                            previous_pattern.get_pattern()
+                                [previous_pattern.get_pattern().len() - 1],
+                            'X',
+                        ],
+                    ));
+                } else {
+                    line_patterns.push(Pattern::new(
+                        x,
+                        y,
+                        vec![
+                            previous_pattern.get_pattern()
+                                [previous_pattern.get_pattern().len() - 1],
+                            '.',
+                        ],
+                    ));
                 }
             }
-            if !line_patterns.is_empty(){
+            if !line_patterns.is_empty() {
                 all_patterns.push(line_patterns);
             }
         }
@@ -298,37 +318,51 @@ impl Canvas {
         // use all_patterns to actually draw the circle
         let mut previous_pattern = Vec::<Pattern>::new();
         for (i, line_patterns) in all_patterns.iter().enumerate() {
-            let start_pattern = line_patterns.iter().find(|pattern| pattern.get_pattern() == vec!['.','X']);
-            let end_pattern = line_patterns.iter().find(|pattern| pattern.get_pattern() == vec!['X','.']);
-            if previous_pattern.is_empty(){
+            let start_pattern = line_patterns
+                .iter()
+                .find(|pattern| pattern.get_pattern() == vec!['.', 'X']);
+            if start_pattern.is_none() {
+                continue;
+            }
+            let end_pattern = line_patterns
+                .iter()
+                .find(|pattern| pattern.get_pattern() == vec!['X', '.']);
+            if end_pattern.is_none() {
+                continue;
+            }
+            let mut previous_pattern_found = true;
+            let previous_start_pattern = previous_pattern
+                .iter()
+                .find(|pattern| pattern.get_pattern() == vec!['.', 'X']);
+            if previous_start_pattern.is_none() {
+                previous_pattern_found = false;
+            }
+            let previous_end_pattern = previous_pattern
+                .iter()
+                .find(|pattern| pattern.get_pattern() == vec!['X', '.']);
+            if previous_end_pattern.is_none() {
+                previous_pattern_found = false;
+            }
+            if !previous_pattern_found {
                 // first line
-                for x in start_pattern.unwrap().get_x()..end_pattern.unwrap().get_x(){
+                for x in start_pattern.unwrap().get_x()..end_pattern.unwrap().get_x() {
                     self.draw_pixel_maybe(Point::new(x as f32, line_patterns[0].get_y() as f32), 1);
                 }
-            }
-            else if i == all_patterns.len() - 1{
-                // last line
-                for x in start_pattern.unwrap().get_x()..end_pattern.unwrap().get_x(){
-                    self.draw_pixel_maybe(Point::new(x as f32, line_patterns[0].get_y() as f32), 1);
-                }
-            }
-            else{
-                let previous_start_pattern = previous_pattern.iter().find(|pattern| pattern.get_pattern() == vec!['.','X']);
-                let previous_end_pattern = previous_pattern.iter().find(|pattern| pattern.get_pattern() == vec!['X','.']);
+            } else {
                 let mut previous_start_x = previous_start_pattern.unwrap().get_x();
                 let mut current_start_x = start_pattern.unwrap().get_x();
                 let mut previous_end_x = previous_end_pattern.unwrap().get_x();
                 let mut current_end_x = end_pattern.unwrap().get_x();
-                if previous_start_x > current_start_x{
+                if previous_start_x > current_start_x {
                     std::mem::swap(&mut previous_start_x, &mut current_start_x);
                 }
-                if previous_end_x > current_end_x{
+                if previous_end_x > current_end_x {
                     std::mem::swap(&mut previous_end_x, &mut current_end_x);
                 }
-                for x in previous_start_x..current_start_x{
+                for x in previous_start_x..current_start_x + 1 {
                     self.draw_pixel_maybe(Point::new(x as f32, line_patterns[0].get_y() as f32), 1);
                 }
-                for x in previous_end_x..current_end_x{
+                for x in previous_end_x..current_end_x + 1 {
                     self.draw_pixel_maybe(Point::new(x as f32, line_patterns[0].get_y() as f32), 1);
                 }
             }
@@ -337,7 +371,7 @@ impl Canvas {
     }
 }
 
-mod detail{
+mod detail {
     #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
     pub struct Pattern {
         x: i32,
@@ -421,14 +455,14 @@ mod canvas_tests {
         let canvas_pixels = canvas.get_pixels();
         let result = "..........\n\
                       ..........\n\
-                      ....XXX...\n\
-                      ...X...X..\n\
-                      ..X.....X.\n\
-                      ..X.....X.\n\
-                      ..X.....X.\n\
-                      ...X...X..\n\
-                      ....XXX...\n\
-                      ..........\n";
+                      .....XX...\n\
+                      ...XXXXXX.\n\
+                      ...X....X.\n\
+                      ..XX....X.\n\
+                      ...X....X.\n\
+                      ...X....X.\n\
+                      ...XXXXXX.\n\
+                      .....XX...\n";
         assert_eq!(canvas_pixels, result);
     }
 }
