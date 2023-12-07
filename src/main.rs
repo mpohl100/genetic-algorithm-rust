@@ -4,7 +4,7 @@ mod evol;
 mod math2d;
 
 use crate::canvas::Canvas;
-use crate::evol::ordinary_evol::EvolutionOptions;
+use crate::evol::evol_options::EvolutionOptions;
 use crate::math2d::circle::Circle;
 use crate::math2d::point::Point;
 

@@ -280,7 +280,7 @@ impl Canvas {
         for y in start_y..end_y {
             let mut line_patterns = Vec::<Pattern>::new();
             for x in start_x..end_x {
-                let mut previous_pattern;
+                let previous_pattern;
                 if line_patterns.is_empty() {
                     previous_pattern = Pattern::new(x - 1, y, vec!['.']);
                 } else {

@@ -1,13 +1,8 @@
-use crate::evol::ordinary_evol::detail::breed;
-use crate::evol::ordinary_evol::Challenge;
-use crate::evol::ordinary_evol::EvolutionCoordinator;
-use crate::evol::ordinary_evol::EvolutionOptions;
-use crate::evol::ordinary_evol::Phenotype;
-use crate::evol::ordinary_evol::RandomNumberGenerator;
-use crate::evol::partial_evol::detail::breed_partial;
-use crate::evol::partial_evol::PartialChallenge;
-use crate::evol::partial_evol::PartialEvolutionOptions;
-use crate::evol::partial_evol::PartialPhenotype;
+use super::{
+    evol_options::{EvolutionOptions, PartialEvolutionOptions},
+    ordinary_evol::{self, Challenge, EvolutionCoordinator, Phenotype, RandomNumberGenerator},
+    partial_evol::{self, PartialChallenge, PartialPhenotype},
+};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct XCoordinate {
@@ -77,7 +72,7 @@ impl Challenge<XCoordinate, EvolutionOptions> for XCoordinateChallenge {
         evol_options: &EvolutionOptions,
     ) -> Vec<XCoordinate> {
         if !self.use_partial {
-            breed(parents, rng, evol_coordinator, evol_options)
+            ordinary_evol::breed(parents, rng, evol_coordinator, evol_options)
         } else {
             Vec::new()
         }
@@ -98,7 +93,7 @@ impl PartialChallenge<XCoordinate, PartialEvolutionOptions> for XCoordinateChall
         evol_options: &PartialEvolutionOptions,
     ) -> Vec<XCoordinate> {
         if self.use_partial {
-            breed_partial(parents, rng, evol_coordinator, evol_options)
+            partial_evol::breed_partial(parents, rng, evol_coordinator, evol_options)
         } else {
             Vec::new()
         }
