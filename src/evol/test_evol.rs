@@ -27,7 +27,7 @@ impl Phenotype for XCoordinate {
         self.x = (self.x + other.x) / 2.0;
     }
 
-    fn mutate(&mut self, rng: &mut RandomNumberGenerator, evol_coordinator: EvolutionCoordinator) {
+    fn mutate(&mut self, rng: &mut RandomNumberGenerator) {
         let delta = rng.fetch_uniform(-100.0, 100.0, 1)[0] as f64;
         self.x += delta / 100.0;
     }

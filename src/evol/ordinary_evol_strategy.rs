@@ -1,5 +1,6 @@
+use std::cell::RefCell;
+
 use super::{
-    evol_coordinator::EvolutionCoordinator,
     rand::RandomNumberGenerator,
     traits::{EvolutionOptionsTrait, EvolutionStrategy, Phenotype},
 };
@@ -13,25 +14,27 @@ where
 {
     fn breed(
         &self,
-        parents: Vec<Pheno>,
+        parents: &Vec<Pheno>,
         rng: &mut RandomNumberGenerator,
-        evol_coordinator: EvolutionCoordinator,
         evol_options: &EvolOptions,
     ) -> Vec<Pheno> {
         let mut children: Vec<Pheno> = Vec::new();
-        let winner_previous_generation = parents[0];
-        children.push(winner_previous_generation);
-        for i in 1..parents.len() {
-            let mut child = winner_previous_generation;
-            child.crossover(&parents[i]);
-            child.mutate(rng, evol_coordinator.clone());
+        let winner_previous_generation = RefCell::new(parents[0]);
+        children.push(*winner_previous_generation.borrow_mut());
+
+        parents.iter().skip(1).for_each(|parent| {
+            let mut child = *winner_previous_generation.borrow_mut();
+            child.crossover(parent);
+            child.mutate(rng);
             children.push(child);
-        }
-        for _ in parents.len()..evol_options.get_num_children() {
-            let mut child = winner_previous_generation;
-            child.mutate(rng, evol_coordinator.clone());
-            children.push(child);
-        }
-        children.clone()
+        });
+
+        children.extend((parents.len()..evol_options.get_num_children()).map(|_| {
+            let mut child = *winner_previous_generation.borrow_mut();
+            child.mutate(rng);
+            child
+        }));
+
+        children
     }
 }

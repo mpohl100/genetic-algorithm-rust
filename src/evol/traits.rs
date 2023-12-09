@@ -1,4 +1,4 @@
-use super::{evol_coordinator::EvolutionCoordinator, rand::RandomNumberGenerator};
+use super::rand::RandomNumberGenerator;
 
 pub trait EvolutionStrategy<Pheno, EvolOptions>
 where
@@ -7,9 +7,8 @@ where
 {
     fn breed(
         &self,
-        parents: Vec<Pheno>,
+        parents: &Vec<Pheno>,
         rng: &mut RandomNumberGenerator,
-        evol_coordinator: EvolutionCoordinator,
         evol_options: &EvolOptions,
     ) -> Vec<Pheno>;
 }
@@ -37,7 +36,7 @@ where
     Self: Clone + Copy + Sized,
 {
     fn crossover(&mut self, other: &Self);
-    fn mutate(&mut self, rng: &mut RandomNumberGenerator, evol_coordinator: EvolutionCoordinator);
+    fn mutate(&mut self, rng: &mut RandomNumberGenerator);
     fn to_string_internal(&self) -> String;
 }
 
