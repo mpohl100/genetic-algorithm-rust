@@ -1,5 +1,19 @@
 use super::{evol_coordinator::EvolutionCoordinator, rand::RandomNumberGenerator};
 
+pub trait EvolutionStrategy<Pheno, EvolOptions>
+where
+    Pheno: Phenotype,
+    EvolOptions: EvolutionOptionsTrait,
+{
+    fn breed(
+        &self,
+        parents: Vec<Pheno>,
+        rng: &mut RandomNumberGenerator,
+        evol_coordinator: EvolutionCoordinator,
+        evol_options: &EvolOptions,
+    ) -> Vec<Pheno>;
+}
+
 pub trait EvolutionOptionsTrait
 where
     Self: Clone + Sized,
@@ -20,7 +34,7 @@ where
 
 pub trait Phenotype
 where
-    Self: Clone + Sized,
+    Self: Clone + Copy + Sized,
 {
     fn crossover(&mut self, other: &Self);
     fn mutate(&mut self, rng: &mut RandomNumberGenerator, evol_coordinator: EvolutionCoordinator);
@@ -32,34 +46,4 @@ where
     Self: Phenotype,
 {
     fn magnitude(&self) -> f64;
-}
-
-pub trait Challenge<Pheno, EvolOptions>
-where
-    Pheno: Phenotype,
-    EvolOptions: EvolutionOptionsTrait,
-{
-    fn score(&self, phenotype: Pheno, rng: &mut RandomNumberGenerator) -> f64;
-    fn breed(
-        &self,
-        parents: Vec<Pheno>,
-        rng: &mut RandomNumberGenerator,
-        evol_coordinator: EvolutionCoordinator,
-        evol_options: &EvolOptions,
-    ) -> Vec<Pheno>;
-}
-
-pub trait PartialChallenge<Pheno, EvolOptions>
-where
-    Pheno: PartialPhenotype,
-    EvolOptions: PartialEvolutionOptionsTrait,
-{
-    fn score(&self, phenotype: Pheno, rng: &mut RandomNumberGenerator) -> f64;
-    fn breed(
-        &self,
-        parents: Vec<Pheno>,
-        rng: &mut RandomNumberGenerator,
-        evol_coordinator: EvolutionCoordinator,
-        evol_options: &EvolOptions,
-    ) -> Vec<Pheno>;
 }

@@ -1,5 +1,7 @@
 use crate::{
-    evol::ordinary_evol::{EvolutionCoordinator, Phenotype, RandomNumberGenerator},
+    evol::{
+        evol_coordinator::EvolutionCoordinator, rand::RandomNumberGenerator, traits::Phenotype,
+    },
     math2d::{circle::Circle, point::Point, vector::Vector},
 };
 
