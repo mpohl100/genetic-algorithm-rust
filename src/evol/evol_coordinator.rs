@@ -2,8 +2,8 @@ use super::traits::EvolutionOptionsTrait;
 
 #[derive(Clone, Copy)]
 pub struct EvolutionCoordinator {
-    pub current_generation: usize,
-    pub num_generations: usize,
+    current_generation: usize,
+    num_generations: usize,
 }
 
 impl EvolutionCoordinator {
