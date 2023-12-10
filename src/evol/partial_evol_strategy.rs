@@ -39,12 +39,12 @@ where
                 }
                 phenotype
             };
-            let mut new_phenotype = phenotype.clone();
+
             for _ in 0..1000 {
-                if pheno_type_in_range(&new_phenotype) {
-                    return Some(new_phenotype);
+                if pheno_type_in_range(&phenotype) {
+                    return Some(phenotype);
                 }
-                new_phenotype = advance_phenotype_n_times(phenotype.clone(), 1000);
+                phenotype = advance_phenotype_n_times(phenotype, 1000);
             }
             None
         };
