@@ -61,7 +61,7 @@ where
         });
 
         children.extend((parents.len()..evol_options.get_num_children()).map(|_| {
-            let child = *winner_previous_generation.borrow_mut();
+            let child = *winner_previous_generation.get_mut();
             let mutated_child = develop(child, true).unwrap();
             mutated_child
         }));
