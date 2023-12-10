@@ -51,42 +51,38 @@ where
         for _ in 0..evol_options.get_num_generations() {
             candidates.clear();
             evol_coordinator.run();
-            candidates.extend(self.strategy.breed(
-                parents.clone(),
-                rng,
-                evol_coordinator.clone(),
-                &evol_options,
-            ));
+            candidates.extend(self.strategy.breed(&parents, rng, &evol_options));
+
             fitness.clear();
-            for candidate in candidates.iter() {
+            candidates.iter().for_each(|candidate| {
                 let score = (self.score_fn)(*candidate);
                 fitness.push(EvolutionResult::<Pheno> {
                     winner: candidate.clone(),
                     score,
-                });
-            }
+                })
+            });
+
             fitness.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
             if evol_options.get_log_level() > 0 {
                 println!("Generation: {}", evol_coordinator.get_current_generation());
                 if evol_options.get_log_level() > 1 {
-                    for fit in fitness.iter() {
+                    fitness.iter().for_each(|fit| {
                         println!(
                             "Score {}: Phenotype: {}",
                             fit.score,
                             fit.winner.to_string_internal()
-                        );
-                    }
+                        )
+                    });
                 }
             }
+
             parents.clear();
-            let mut i = 0;
-            for fit in fitness.iter() {
-                parents.push(fit.winner.clone());
-                if i >= evol_options.get_num_parents() {
-                    break;
-                }
-                i += 1;
-            }
+            fitness
+                .iter()
+                .take(evol_options.get_num_parents())
+                .for_each(|fit| {
+                    parents.push(fit.winner.clone());
+                });
         }
         fitness[0].clone()
     }

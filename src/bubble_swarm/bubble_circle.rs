@@ -86,7 +86,7 @@ impl Phenotype for BubbleCircle {
         self.circle = Circle::new(new_center, self.circle.get_radius());
     }
 
-    fn mutate(&mut self, rng: &mut RandomNumberGenerator, evol_coordinator: EvolutionCoordinator) {
+    fn mutate(&mut self, rng: &mut RandomNumberGenerator) {
         let random_mutation_value_x = rng
             .fetch_uniform(-5.0, 5.0, 1)
             .back()
